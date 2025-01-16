@@ -211,19 +211,18 @@ class _InputTaskPageState extends State<InputTaskPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('新しい「やること」を追加'),
+          title: const Text('新しい「やること」を追加'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: taskController,
-                decoration: InputDecoration(hintText: '「やること」を入力してください'),
+                decoration: const InputDecoration(hintText: '「やること」を入力してください'),
               ),
               TextField(
                 controller: rewardController,
                 keyboardType: TextInputType.number,
-                decoration:
-                    InputDecoration(hintText: 'おこずかいを入力 *半角数字のみでお願いします'),
+                decoration: const InputDecoration(hintText: 'おこづかいを入力'),
               ),
             ],
           ),
@@ -255,14 +254,14 @@ class _InputTaskPageState extends State<InputTaskPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('おこずかいを編集'),
+          title: Text('おこづかいを編集'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: rewardController,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(hintText: 'おこずかいを入力してください'),
+                decoration: InputDecoration(hintText: 'おこづかいを入力してください'),
               ),
             ],
           ),
@@ -293,8 +292,9 @@ class _InputTaskPageState extends State<InputTaskPage> {
       appBar: AppBar(
         title: const Text("やることリスト"),
         foregroundColor: Colors.black,
-        backgroundColor: const Color.fromARGB(255, 230, 167, 72),
+        backgroundColor: const Color(0xFFFF9800),
         centerTitle: true,
+        automaticallyImplyLeading: false,
         actions: [
           PopupMenuButton<int>(
             onSelected: (int result) {
@@ -348,107 +348,40 @@ class _InputTaskPageState extends State<InputTaskPage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : childrenList.isEmpty
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "子供を追加してください",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _childNameController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: '子供の名前',
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => addChild(_childNameController.text),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color.fromARGB(255, 230, 167, 72),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFFFE0B2), Color(0xFFFF9800)], // グラデーションの色
+            begin: Alignment.topCenter, // グラデーションの開始位置
+            end: Alignment.bottomCenter, // グラデーションの終了位置
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : childrenList.isEmpty
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "子供を追加してください",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        child: const Text(
-                          "追加",
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _childNameController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: '子供の名前',
+                          ),
                         ),
-                      ),
-                    ],
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      tasks.isEmpty
-                          ? const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    '「やること」がありません',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(height: 16),
-                                ],
-                              ),
-                            )
-                          : Expanded(
-                              child: ListView.builder(
-                                itemCount: tasks.length,
-                                itemBuilder: (context, index) {
-                                  return Card(
-                                    margin:
-                                        const EdgeInsets.symmetric(vertical: 8),
-                                    child: ListTile(
-                                      title: Text(tasks[index]['task']),
-                                      subtitle: Text(
-                                          'おこずかい: ${tasks[index]['reward']}円'),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.edit),
-                                            onPressed: () =>
-                                                _showEditTaskDialog(index,
-                                                    tasks[index]['reward']),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.delete),
-                                            onPressed: () =>
-                                                deleteTaskFromFirestore(
-                                                    selectedChild, index),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                      const SizedBox(height: 16),
-                      Center(
-                        child: ElevatedButton(
-                          onPressed: _showAddTaskDialog,
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () => addChild(_childNameController.text),
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 const Color.fromARGB(255, 230, 167, 72),
@@ -459,16 +392,175 @@ class _InputTaskPageState extends State<InputTaskPage> {
                             ),
                           ),
                           child: const Text(
-                            "「やること」を追加",
+                            "追加",
                             style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        tasks.isEmpty
+                            ? Center(
+                                child: selectedChild == ""
+                                    ? Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const SizedBox(
+                                            height: 40,
+                                          ),
+                                          const Text(
+                                            '子供が選択されていません。',
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 16),
+                                          Image.asset(
+                                            "image/children.png",
+                                            height: 150,
+                                          )
+                                        ],
+                                      )
+                                    : Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '現在選択されている子供: $selectedChild\n「やること」がありません',
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 16),
+                                          Image.asset(
+                                            "image/cleaning-staff.png",
+                                            height: 150,
+                                          ),
+                                          const SizedBox(
+                                            height: 16,
+                                          ),
+                                          Center(
+                                            child: ElevatedButton(
+                                              onPressed: _showAddTaskDialog,
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    const Color.fromARGB(
+                                                        255, 230, 167, 72),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 32,
+                                                        vertical: 16),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                ),
+                                              ),
+                                              child: const Text(
+                                                "「やること」を追加",
+                                                style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                              )
+                            : Expanded(
+                                child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Text(
+                                        // ignore: unnecessary_null_comparison
+                                        selectedChild == ""
+                                            ? "子供が選択されていません"
+                                            : '現在選択されている子供: $selectedChild',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: ListView.builder(
+                                        itemCount: tasks.length,
+                                        itemBuilder: (context, index) {
+                                          return Card(
+                                            margin: const EdgeInsets.symmetric(
+                                                vertical: 8),
+                                            child: ListTile(
+                                              title: Text(tasks[index]['task']),
+                                              subtitle: Text(
+                                                  'おこづかい: ${tasks[index]['reward']}円'),
+                                              trailing: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  IconButton(
+                                                    icon:
+                                                        const Icon(Icons.edit),
+                                                    onPressed: () =>
+                                                        _showEditTaskDialog(
+                                                            index,
+                                                            tasks[index]
+                                                                ['reward']),
+                                                  ),
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                        Icons.delete),
+                                                    onPressed: () =>
+                                                        deleteTaskFromFirestore(
+                                                            selectedChild,
+                                                            index),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 16,
+                                    ),
+                                    Center(
+                                      child: ElevatedButton(
+                                        onPressed: _showAddTaskDialog,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color.fromARGB(
+                                              255, 230, 167, 72),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 32, vertical: 16),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          "「やること」を追加",
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                      ],
+                    ),
+        ),
       ),
     );
   }

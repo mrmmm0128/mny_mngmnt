@@ -132,9 +132,12 @@ class _RewardPageState extends State<RewardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("これまでのがんばり"),
-        foregroundColor: Colors.black,
-        backgroundColor: const Color.fromARGB(255, 230, 167, 72),
+        title: const Text(
+          "これまでのがんばり",
+          style: TextStyle(fontFamily: 'Poppins'),
+        ),
+        automaticallyImplyLeading: false,
+        backgroundColor: const Color(0xFFFF9800), // ビビッドなオレンジ
         centerTitle: true,
         actions: [
           PopupMenuButton<int>(
@@ -144,24 +147,34 @@ class _RewardPageState extends State<RewardPage> {
                   context: context,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                      title: Text('子供を追加'),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      title: const Text(
+                        '子供を追加',
+                        style: TextStyle(fontFamily: 'Poppins'),
+                      ),
                       content: TextField(
                         controller: _childNameController,
                         decoration: const InputDecoration(
                           labelText: '子供の名前',
+                          border: OutlineInputBorder(),
                         ),
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: Text('キャンセル'),
+                          child: const Text('キャンセル'),
                         ),
-                        TextButton(
+                        ElevatedButton(
                           onPressed: () {
                             addChild(_childNameController.text);
                             Navigator.pop(context);
                           },
-                          child: Text('追加'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF03A9F4), // ライトブルー
+                          ),
+                          child: const Text('追加'),
                         ),
                       ],
                     );
@@ -176,7 +189,10 @@ class _RewardPageState extends State<RewardPage> {
                 ...List.generate(childrenList.length, (index) {
                   return PopupMenuItem<int>(
                     value: index,
-                    child: Text(childrenList[index]),
+                    child: Text(
+                      childrenList[index],
+                      style: const TextStyle(fontFamily: 'Poppins'),
+                    ),
                   );
                 }),
                 const PopupMenuItem<int>(
@@ -189,84 +205,176 @@ class _RewardPageState extends State<RewardPage> {
           ),
         ],
       ),
-      body: Center(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFFFE0B2), Color(0xFFFF9800)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         child: isLoading
-            ? const CircularProgressIndicator()
-            : FutureBuilder<int>(
-                future: _streek,
-                builder: (context, streekSnapshot) {
-                  if (streekSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (streekSnapshot.hasError) {
-                    return Text(
-                      'エラー: ${streekSnapshot.error}',
-                      style: TextStyle(fontSize: 24, color: Colors.red),
-                    );
-                  } else if (streekSnapshot.hasData) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '現在 ${streekSnapshot.data} 日間連続で達成しています！',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
+            ? const Center(
+                child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CircularProgressIndicator()),
+              )
+            : Center(
+                child: selectedChild.isEmpty
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(
+                            height: 40,
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        FutureBuilder<int>(
-                          future: _reward,
-                          builder: (context, rewardSnapshot) {
-                            if (rewardSnapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const CircularProgressIndicator();
-                            } else if (rewardSnapshot.hasError) {
-                              return Text(
-                                'エラー: ${rewardSnapshot.error}',
-                                style:
-                                    TextStyle(fontSize: 24, color: Colors.red),
-                              );
-                            } else if (rewardSnapshot.hasData) {
-                              return Column(
-                                children: [
-                                  Text(
-                                    'いまのおこずかい: ${rewardSnapshot.data} 円',
+                          const Text(
+                            '子供が選択されていません。',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Image.asset(
+                            "image/children.png",
+                            height: 150,
+                          )
+                        ],
+                      )
+                    : Column(
+                        children: [
+                          const SizedBox(
+                            height: 40,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              selectedChild == ""
+                                  ? "子供が選択されていません"
+                                  : '現在選択されている子供: $selectedChild',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: FutureBuilder<int>(
+                              future: _streek,
+                              builder: (context, streekSnapshot) {
+                                if (streekSnapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const CircularProgressIndicator();
+                                } else if (streekSnapshot.hasError) {
+                                  return Text(
+                                    'エラー: ${streekSnapshot.error}',
                                     style: const TextStyle(
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                                      fontSize: 24,
+                                      color: Colors.red,
+                                      fontFamily: 'Poppins',
                                     ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  const Text(
-                                    'よくがんばりました！',
+                                  );
+                                } else if (streekSnapshot.hasData) {
+                                  return Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Image.asset(
+                                        'image/money.png', // 1つ目のイラスト
+                                        height: 150,
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Text(
+                                        '現在 ${streekSnapshot.data} 日間連続で達成しています！',
+                                        style: const TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      FutureBuilder<int>(
+                                        future: _reward,
+                                        builder: (context, rewardSnapshot) {
+                                          if (rewardSnapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return const CircularProgressIndicator();
+                                          } else if (rewardSnapshot.hasError) {
+                                            return Text(
+                                              'エラー: ${rewardSnapshot.error}',
+                                              style: const TextStyle(
+                                                fontSize: 24,
+                                                color: Colors.red,
+                                                fontFamily: 'Poppins',
+                                              ),
+                                            );
+                                          } else if (rewardSnapshot.hasData) {
+                                            return Card(
+                                              elevation: 5,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                              ),
+                                              color: const Color(0xFFFFF3E0),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(16),
+                                                child: Column(
+                                                  children: [
+                                                    Text(
+                                                      'いまのおこづかい: ${rewardSnapshot.data} 円',
+                                                      style: const TextStyle(
+                                                        fontSize: 30,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black,
+                                                        fontFamily: 'Poppins',
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 20),
+                                                    const Text(
+                                                      'よくがんばっています！',
+                                                      style: TextStyle(
+                                                        fontSize: 24,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black,
+                                                        fontFamily: 'Poppins',
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 20),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          } else {
+                                            return const Text(
+                                              '報酬データがありません',
+                                              style: TextStyle(
+                                                fontSize: 24,
+                                                fontFamily: 'Poppins',
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                } else {
+                                  return const Text(
+                                    'ストリークデータがありません',
                                     style: TextStyle(
                                       fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                                      fontFamily: 'Poppins',
                                     ),
-                                  ),
-                                ],
-                              );
-                            } else {
-                              return const Text(
-                                '報酬データがありません',
-                                style: TextStyle(fontSize: 24),
-                              );
-                            }
-                          },
-                        ),
-                      ],
-                    );
-                  } else {
-                    return const Text(
-                      'ストリークデータがありません',
-                      style: TextStyle(fontSize: 24),
-                    );
-                  }
-                },
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
               ),
       ),
     );

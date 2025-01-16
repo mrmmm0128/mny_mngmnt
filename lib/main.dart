@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mny_mngm/model/provider.dart';
 import 'package:mny_mngm/pages/HomePage.dart';
 import 'package:mny_mngm/pages/TodayTask.dart';
@@ -33,6 +34,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+        textTheme: GoogleFonts.coustardTextTheme(
+          Theme.of(context).textTheme, // デフォルトのTextThemeに適用
+        ),
       ),
       home: const BottomNavBar(),
     );
@@ -67,27 +71,27 @@ class _BottomNavBarState extends State<BottomNavBar> {
             onTap: _onItemTapped,
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
-                icon: Icon(Icons.help_outline_outlined),
-                label: '使い方',
-              ),
-              BottomNavigationBarItem(
                 icon: Icon(Icons.business),
                 activeIcon: Icon(Icons.business_center),
-                label: 'リスト',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.school),
                 label: 'やること',
               ),
               BottomNavigationBarItem(
+                icon: Icon(Icons.school),
+                label: '今日',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.money),
+                label: 'おこづかい',
+              ),
+              BottomNavigationBarItem(
                 icon: Icon(Icons.settings),
-                label: 'おこずかい',
+                label: '使い方',
               ),
             ],
-            backgroundColor: const Color.fromARGB(255, 179, 179, 179),
+            backgroundColor: const Color(0xFFFF9800),
             enableFeedback: true,
-            iconSize: 18,
-            selectedFontSize: 20,
+            iconSize: 15,
+            selectedFontSize: 17,
             selectedIconTheme: const IconThemeData(
                 size: 30, color: Color.fromARGB(255, 0, 0, 0)),
             selectedLabelStyle: const TextStyle(color: Colors.red),
@@ -116,10 +120,6 @@ class _BottomNavBarState extends State<BottomNavBar> {
         onTap: _onItemTapped,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.help_outline_outlined),
-            label: '使い方',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.business),
             activeIcon: Icon(Icons.business_center),
             label: 'リスト',
@@ -129,14 +129,18 @@ class _BottomNavBarState extends State<BottomNavBar> {
             label: 'やること',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.money),
+            label: 'おこづかい',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: 'おこずかい',
+            label: '使い方',
           ),
         ],
-        backgroundColor: const Color.fromARGB(255, 179, 179, 179),
+        backgroundColor: const Color(0xFFFF9800),
         enableFeedback: true,
-        iconSize: 18,
-        selectedFontSize: 20,
+        iconSize: 15,
+        selectedFontSize: 17,
         selectedIconTheme:
             const IconThemeData(size: 30, color: Color.fromARGB(255, 0, 0, 0)),
         selectedLabelStyle: const TextStyle(color: Colors.red),

@@ -222,7 +222,8 @@ class _TodayTaskPageState extends State<TodayTaskPage> {
       appBar: AppBar(
         title: const Text("今日のやること"),
         foregroundColor: Colors.black,
-        backgroundColor: const Color.fromARGB(255, 230, 167, 72),
+        backgroundColor: const Color(0xFFFF9800),
+        automaticallyImplyLeading: false,
         centerTitle: true,
         actions: [
           PopupMenuButton<int>(
@@ -232,7 +233,7 @@ class _TodayTaskPageState extends State<TodayTaskPage> {
                   context: context,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                      title: Text('子供を追加'),
+                      title: const Text('子供を追加'),
                       content: TextField(
                         controller: _childNameController,
                         decoration: const InputDecoration(
@@ -277,56 +278,128 @@ class _TodayTaskPageState extends State<TodayTaskPage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 今日の日付表示
-            Center(
-              child: Text(
-                formattedDate,
-                style: TextStyle(
-                  fontSize: 70, // 大きく表示
-                  fontWeight: FontWeight.bold,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFFFE0B2), Color(0xFFFF9800)], // グラデーションの色
+            begin: Alignment.topCenter, // グラデーションの開始位置
+            end: Alignment.bottomCenter, // グラデーションの終了位置
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 今日の日付表示
+              Center(
+                child: Text(
+                  formattedDate,
+                  style: const TextStyle(
+                    fontSize: 70, // 大きく表示
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            // タスクリスト
-            isLoading
-                ? Center(child: CircularProgressIndicator())
-                : tasks.isEmpty
-                    ? Center(
-                        child: Text(
-                          '今日の「やること」は全て達成しました！',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      )
-                    : Expanded(
-                        child: ListView.builder(
-                          itemCount: tasks.length,
-                          itemBuilder: (context, index) {
-                            return Card(
-                              child: ListTile(
-                                title: Text(
-                                  tasks[index]['taskName'],
-                                  style: TextStyle(fontSize: 18),
+              const SizedBox(height: 16),
+              // タスクリスト
+              isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : tasks.isEmpty
+                      ? Center(
+                          child: selectedChild == ""
+                              ? Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const SizedBox(
+                                      height: 40,
+                                    ),
+                                    const Text(
+                                      '子供が選択されていません。',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Image.asset(
+                                      "image/children.png",
+                                      height: 150,
+                                    )
+                                  ],
+                                )
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '現在選択されている子供は $selectedChild',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    const Text(
+                                      '今日のやることは達成しました！ \nおつかれさまでした!',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    Image.asset(
+                                      "image/reading.png",
+                                      height: 150,
+                                    )
+                                  ],
                                 ),
-                                subtitle:
-                                    Text('報酬: ${tasks[index]['reward']}円'),
-                                trailing: ElevatedButton(
-                                  onPressed: () =>
-                                      completeTask(selectedChild, index),
-                                  child: Text('達成'),
+                        )
+                      : Expanded(
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  // ignore: unnecessary_null_comparison
+                                  selectedChild == ""
+                                      ? "子供が選択されていません"
+                                      : '現在選択されている子供: $selectedChild',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                            );
-                          },
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: tasks.length,
+                                  itemBuilder: (context, index) {
+                                    return Card(
+                                      child: ListTile(
+                                        title: Text(
+                                          tasks[index]['taskName'],
+                                          style: TextStyle(fontSize: 18),
+                                        ),
+                                        subtitle: Text(
+                                            '報酬: ${tasks[index]['reward']}円'),
+                                        trailing: ElevatedButton(
+                                          onPressed: () => completeTask(
+                                              selectedChild, index),
+                                          child: Text('達成'),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-          ],
+            ],
+          ),
         ),
       ),
     );

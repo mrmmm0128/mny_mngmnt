@@ -9,8 +9,9 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
-  List<String> childrenList = ['たかし', 'ひろし', 'みさえ'];
+  List<String> childrenList = [];
   String selectedChild = "";
+  bool isLoading = true;
   final TextEditingController _childNameController = TextEditingController();
 
   @override
@@ -28,6 +29,7 @@ class _AccountPageState extends State<AccountPage> {
 
   Future<void> fetchChildList() async {
     try {
+      isLoading = true;
       String deviceID = getDeviceIDweb();
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       DocumentSnapshot snapshot =
@@ -45,6 +47,7 @@ class _AccountPageState extends State<AccountPage> {
         setState(() {
           childrenList = [];
           selectedChild = "";
+          isLoading = false;
         });
       }
     } catch (e) {
@@ -67,6 +70,40 @@ class _AccountPageState extends State<AccountPage> {
     setState(() {});
   }
 
+  void deleteChildName(String Name) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    String deviceID = getDeviceIDweb();
+    List<String> documentList = ["Streek", "completedTasks", "task", "reward"];
+
+    childrenList.remove(Name);
+    await firestore
+        .collection(deviceID)
+        .doc("children")
+        .set({"List": childrenList});
+    setState(() {});
+
+    try {
+      for (String docId in documentList) {
+        QuerySnapshot subcollectionSnapshot = await firestore
+            .collection(deviceID)
+            .doc(docId)
+            .collection(Name)
+            .get();
+        for (QueryDocumentSnapshot doc in subcollectionSnapshot.docs) {
+          await firestore
+              .collection(deviceID)
+              .doc(docId)
+              .collection(Name)
+              .doc(doc.id)
+              .delete();
+        }
+      }
+      setState(() {});
+    } catch (e) {
+      print("エラー $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,6 +112,7 @@ class _AccountPageState extends State<AccountPage> {
         foregroundColor: Colors.black,
         backgroundColor: const Color.fromARGB(255, 230, 167, 72),
         centerTitle: true,
+        automaticallyImplyLeading: false,
         actions: [
           PopupMenuButton<int>(
             onSelected: (int result) {
@@ -126,10 +164,11 @@ class _AccountPageState extends State<AccountPage> {
           ),
         ],
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const SizedBox(height: 16),
             const Text(
               "毎日成長アプリへようこそ",
               style: TextStyle(
@@ -156,10 +195,10 @@ class _AccountPageState extends State<AccountPage> {
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                "このアプリは、日々の「やること」を管理し、達成することで「おこずかい」を獲得するためのものです。以下の機能をお楽しみください：\n\n"
-                "1. 「やること」の追加：やることリストに新しいタスクを追加し、「おこずかい」を設定します。\n"
-                "2. 「やること」の達成：完了したタスクをマークして「おこずかい」を獲得しましょう。\n"
-                "3. 「おこずかい」の管理：獲得した報酬を確認し、モチベーションを高めます。\n\n"
+                "このアプリは、日々の「やること」を管理し、達成することで「おこづかい」を獲得するためのものです。以下の機能をお楽しみください：\n\n"
+                "1. 「やること」の追加：やることリストに新しいタスクを追加し、「おこづかい」を設定します。\n"
+                "2. 「やること」の達成：完了したタスクをマークして「おこづかい」を獲得しましょう。\n"
+                "3. 「おこづかい」の管理：獲得した報酬を確認し、モチベーションを高めます。\n\n"
                 "一緒に毎日成長していきましょう！",
                 style: TextStyle(
                   fontSize: 16,
@@ -178,7 +217,8 @@ class _AccountPageState extends State<AccountPage> {
               ),
             ),
             const SizedBox(height: 16),
-            Expanded(
+            SizedBox(
+              height: 400, // Change height according to your requirement
               child: ListView.builder(
                 itemCount: childrenList.length,
                 itemBuilder: (context, index) {
@@ -189,6 +229,16 @@ class _AccountPageState extends State<AccountPage> {
                       title: Text(
                         childrenList[index],
                         style: const TextStyle(fontSize: 18),
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () =>
+                                deleteChildName(childrenList[index]),
+                          ),
+                        ],
                       ),
                     ),
                   );
