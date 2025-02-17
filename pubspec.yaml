@@ -42,6 +42,7 @@ dependencies:
   provider: ^6.0.2
   intl: ^0.20.1
   google_fonts: ^6.2.1
+  flutter_colorpicker: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +76,14 @@ flutter:
      - image/studying_2.png
      - image/reading.png
      - image/cleaning-staff.png
+     - image/go.png
+     - image/child_money.png
+     - image/cleaning.png
+     - image/cooking.png
+     - image/happiness.png
+     - image/jumping-man.png
+     - image/training.png
+     - image/midasi.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

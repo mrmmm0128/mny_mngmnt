@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mny_mngm/model/getDeviceId.dart';
 import 'package:intl/intl.dart';
 import 'package:mny_mngm/model/provider.dart';
@@ -16,7 +17,9 @@ class _TodayTaskPageState extends State<TodayTaskPage> {
   bool isLoading = true;
   String deviceID = getDeviceIDweb();
   List<String> childrenList = [];
-  final TextEditingController _childNameController = TextEditingController();
+  Color gradientEndColor = const Color(0xFFFEF9E7);
+  bool gradation = true;
+  String formattedDate = DateFormat('MM/dd').format(DateTime.now());
 
   @override
   void initState() {
@@ -32,6 +35,8 @@ class _TodayTaskPageState extends State<TodayTaskPage> {
 
   Future<void> initializeData() async {
     setState(() {
+      gradientEndColor = Provider.of<ColorNotifier>(context).gradientEndColor;
+      gradation = Provider.of<ColorNotifier>(context).gradation;
       isLoading = true;
     });
 
@@ -215,193 +220,202 @@ class _TodayTaskPageState extends State<TodayTaskPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 今日の日付を取得
-    String formattedDate = DateFormat('MM/dd').format(DateTime.now());
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("今日のやること"),
-        foregroundColor: Colors.black,
-        backgroundColor: const Color(0xFFFF9800),
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        actions: [
-          PopupMenuButton<int>(
-            onSelected: (int result) {
-              if (result == -1) {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text('子供を追加'),
-                      content: TextField(
-                        controller: _childNameController,
-                        decoration: const InputDecoration(
-                          labelText: '子供の名前',
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text('キャンセル'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            addChild(_childNameController.text);
-                            Navigator.pop(context);
-                          },
-                          child: Text('追加'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              } else {
-                changeSelectedChild(result);
-              }
-            },
-            itemBuilder: (BuildContext context) {
-              return [
-                ...List.generate(childrenList.length, (index) {
-                  return PopupMenuItem<int>(
-                    value: index,
-                    child: Text(childrenList[index]),
-                  );
-                }),
-                const PopupMenuItem<int>(
-                  value: -1,
-                  child: Text('子供を追加'),
+      body: gradation
+          ? Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFFFEF9E7), gradientEndColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              ];
-            },
-            icon: const Icon(Icons.person),
+              ),
+              child: _buildContext(), // 共通の子ウィジェットを関数化
+            )
+          : Container(
+              color: const Color(0xFFFFF3E0),
+              child: _buildContext(),
+            ),
+    );
+  }
+
+  Widget _buildContext() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 日付表示
+          Center(
+            child: Text(
+              formattedDate,
+              style: GoogleFonts.coustard(
+                fontSize: 70, // 大きく表示
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // タスク表示
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : tasks.isEmpty
+                      ? _buildNoTasksUI()
+                      : _buildTaskList(),
+            ),
           ),
         ],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFFFE0B2), Color(0xFFFF9800)], // グラデーションの色
-            begin: Alignment.topCenter, // グラデーションの開始位置
-            end: Alignment.bottomCenter, // グラデーションの終了位置
+    );
+  }
+
+// タスクがないときのUI
+  Widget _buildNoTasksUI() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (selectedChild.isEmpty) ...[
+            const SizedBox(height: 40),
+            const Text(
+              '子供が選択されていません。',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Image.asset("image/children.png", height: 150),
+          ] else ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    spreadRadius: 3,
+                    blurRadius: 6,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Text(
+                '現在選択されている子供: $selectedChild',
+                textAlign: TextAlign.center,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'タスクはありません！ \nおつかれさまでした!',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            Image.asset("image/reading.png", height: 150),
+          ],
+        ],
+      ),
+    );
+  }
+
+// タスクリストのUI
+  Widget _buildTaskList() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            selectedChild.isEmpty
+                ? "子供が選択されていません"
+                : '現在選択されている子供: $selectedChild',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 今日の日付表示
-              Center(
-                child: Text(
-                  formattedDate,
-                  style: const TextStyle(
-                    fontSize: 70, // 大きく表示
-                    fontWeight: FontWeight.bold,
+        Expanded(
+          child: ListView.builder(
+            itemCount: tasks.length,
+            itemBuilder: (context, index) {
+              return Card(
+                elevation: 2,
+                margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.task_alt, color: Colors.green),
+                  title: Text(
+                    tasks[index]['taskName'],
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w500),
+                  ),
+                  subtitle: Text('報酬: ${tasks[index]['reward']}円'),
+                  trailing: TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () => _confirmTaskCompletion(index),
+                    child: const Text('達成'),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              // タスクリスト
-              isLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : tasks.isEmpty
-                      ? Center(
-                          child: selectedChild == ""
-                              ? Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const SizedBox(
-                                      height: 40,
-                                    ),
-                                    const Text(
-                                      '子供が選択されていません。',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Image.asset(
-                                      "image/children.png",
-                                      height: 150,
-                                    )
-                                  ],
-                                )
-                              : Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      '現在選択されている子供は $selectedChild',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    const Text(
-                                      '今日のやることは達成しました！ \nおつかれさまでした!',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                    Image.asset(
-                                      "image/reading.png",
-                                      height: 150,
-                                    )
-                                  ],
-                                ),
-                        )
-                      : Expanded(
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Text(
-                                  // ignore: unnecessary_null_comparison
-                                  selectedChild == ""
-                                      ? "子供が選択されていません"
-                                      : '現在選択されている子供: $selectedChild',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: ListView.builder(
-                                  itemCount: tasks.length,
-                                  itemBuilder: (context, index) {
-                                    return Card(
-                                      child: ListTile(
-                                        title: Text(
-                                          tasks[index]['taskName'],
-                                          style: TextStyle(fontSize: 18),
-                                        ),
-                                        subtitle: Text(
-                                            '報酬: ${tasks[index]['reward']}円'),
-                                        trailing: ElevatedButton(
-                                          onPressed: () => completeTask(
-                                              selectedChild, index),
-                                          child: Text('達成'),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-            ],
+              );
+            },
           ),
         ),
+      ],
+    );
+  }
+
+// 達成確認のダイアログ
+  void _confirmTaskCompletion(int index) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "このタスクを達成しますか？",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("キャンセル"),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        completeTask(selectedChild, index);
+                        Navigator.pop(context);
+                      },
+                      child: const Text("達成"),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
